@@ -1,0 +1,58 @@
+:root {
+  --color-primary: #6f5a96;
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: #e6def5;
+  --color-primary-muted: #b9a4db;
+  --color-ink: #1f1a2b;
+  --color-muted: #6b6478;
+  --color-surface: #fbf8ff;
+
+  --font-title: "Playfair Display", ui-serif, Georgia, serif;
+  --font-script: "Dancing Script", cursive;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-title);
+  color: var(--color-ink);
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 600;
+}
+h2 {
+  font-size: 1.75rem;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 1.25rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+h6 {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
