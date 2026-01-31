@@ -1,16 +1,21 @@
 import { useState } from 'react'
-import supabase from '../lib/supabase'
+import { signInWithPassword, signUpWithEmail } from '../services/authService'
 
 export default function Auth() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [isSignUp, setIsSignUp] = useState(false)
+    const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
     const signUp = async () => {
         setLoading(true)
         setErrorMessage(null)
-        const { error } = await supabase.auth.signUp({ email, password })
+        const trimmedFirstName = firstName.trim()
+        const trimmedLastName = lastName.trim()
+        const { error } = await signUpWithEmail(email, password, trimmedFirstName, trimmedLastName)
         if (error) {
             setErrorMessage(error.message)
         }
@@ -20,19 +25,64 @@ export default function Auth() {
     const signIn = async () => {
         setLoading(true)
         setErrorMessage(null)
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { error } = await signInWithPassword(email, password)
         if (error) {
             setErrorMessage(error.message)
         }
         setLoading(false)
     }
 
+    const handleSubmit = async () => {
+        if (isSignUp) {
+            await signUp()
+        } else {
+            await signIn()
+        }
+    }
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4">
             <div className="w-full max-w-sm rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
-                <h1 className="text-xl font-semibold text-zinc-900">Connexion</h1>
-                <p className="mt-1 text-sm text-zinc-600">Crée un compte ou connecte-toi.</p>
+                <div className="flex rounded-md border border-stone-200 bg-stone-100 p-1 text-sm">
+                    <button
+                        className={`text-xl font-semibold flex-1 rounded-md px-3 py-2 transition ${!isSignUp ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'}`}
+                        type="button"
+                        onClick={() => setIsSignUp(false)}
+                        disabled={loading}
+                    >
+                        Connexion
+                    </button>
+                    <button
+                        className={`text-xl font-semibold flex-1 rounded-md px-3 py-2 transition ${isSignUp ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'}`}
+                        type="button"
+                        onClick={() => setIsSignUp(true)}
+                        disabled={loading}
+                    >
+                        Inscription
+                    </button>
+                </div>
+                <p className="mt-2 text-sm text-zinc-600">
+                    {isSignUp ? 'Crée ton compte pour commencer.' : 'Connecte-toi pour continuer.'}
+                </p>
                 <div className="mt-4 flex flex-col gap-3">
+                    {isSignUp ? (
+                        <div className="flex gap-2">
+                            <input
+                                className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm"
+                                type="text"
+                                placeholder="prénom"
+                                value={firstName}
+                                onChange={(event) => setFirstName(event.target.value)}
+                            />
+                            <input
+                                className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm"
+                                type="text"
+                                placeholder="nom"
+                                value={lastName}
+                                onChange={(event) => setLastName(event.target.value)}
+                            />
+                        </div>
+                    ) : null}
                     <input
                         className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm"
                         type="email"
@@ -50,22 +100,13 @@ export default function Auth() {
                     {errorMessage ? (
                         <p className="text-sm text-red-600">{errorMessage}</p>
                     ) : null}
-                    <div className="flex gap-2">
-                        <button
-                            className="flex-1 rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-60"
-                            onClick={signIn}
-                            disabled={loading}
-                        >
-                            Se connecter
-                        </button>
-                        <button
-                            className="flex-1 rounded-md border border-stone-200 px-3 py-2 text-sm disabled:opacity-60"
-                            onClick={signUp}
-                            disabled={loading}
-                        >
-                            Créer un compte
-                        </button>
-                    </div>
+                    <button
+                        className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-60"
+                        onClick={handleSubmit}
+                        disabled={loading}
+                    >
+                        {isSignUp ? 'Créer un compte' : 'Se connecter'}
+                    </button>
                 </div>
             </div>
         </div>
