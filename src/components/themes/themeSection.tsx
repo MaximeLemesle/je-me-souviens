@@ -5,25 +5,29 @@ import { Label } from '../ui/label'
 import { Textarea } from '../ui/textarea'
 import {
     fetchMemoriesByThemeId,
-    type MemoryRow,
+    type MemoryEntity,
 } from '../../repositories/memoryRepository'
 import supabase from '../../lib/supabase'
-import { getCurrentUserId, getProfilesMapByIds, type UserProfile } from '../../services/userService'
+import { getCurrentUserId } from '../../services/userService'
 import { UserUtils } from '../../lib/user.utils'
 import { Badge } from '../ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
 
-function buildMemoriesFromRows(
-    rows: MemoryRow[],
-    profilesById: Record<string, UserProfile>,
-): { text: string; initials: string }[] {
-    return rows.map((row) => ({
-        text: row.text,
-        initials: UserUtils.getInitials(profilesById[row.user_id ?? '']),
-    }))
+async function buildMemories(
+    memories: MemoryEntity[],
+): Promise<{ text: string; initials: string; fullName: string }[]> {
+    const results = await Promise.all(
+        memories.map(async (memory) => ({
+            text: memory.text,
+            initials: await UserUtils.getInitials(memory.user_id),
+            fullName: await UserUtils.getFullName(memory.user_id),
+        })),
+    )
+    return results
 }
 
 export function ThemeSection({ title, themeId }: { title: string; themeId: string }) {
-    const [memories, setMemories] = useState<{ text: string; initials: string }[]>([])
+    const [memories, setMemories] = useState<{ text: string; initials: string; fullName: string }[]>([])
     const [draft, setDraft] = useState('')
     const [isSaving, setIsSaving] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
@@ -37,12 +41,8 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
                 setIsLoading(false)
                 return
             }
-            const rows = data ?? []
-            const userIds = Array.from(
-                new Set(rows.map((row) => row.user_id).filter(Boolean)),
-            ) as string[]
-            const { profilesById } = await getProfilesMapByIds(userIds)
-            setMemories(buildMemoriesFromRows(rows, profilesById))
+            const memories = data ?? []
+            setMemories(await buildMemories(memories))
             setIsLoading(false)
         }
         fetchMemories()
@@ -84,16 +84,8 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
                 return
             }
 
-            const rows = latestData ?? []
-            const userIds = Array.from(
-                new Set(rows.map((row) => row.user_id).filter(Boolean)),
-            ) as string[]
-            const { profilesById: nextProfilesById, error: profilesError } =
-                await getProfilesMapByIds(userIds)
-            if (profilesError) {
-                setErrorMessage(profilesError.message)
-            }
-            setMemories(buildMemoriesFromRows(rows, nextProfilesById))
+            const memories = latestData ?? []
+            setMemories(await buildMemories(memories))
         } finally {
             setIsSaving(false)
             setIsLoading(false)
@@ -118,7 +110,34 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
                                 className="flex items-center gap-3 rounded-md border border-[#e6def5] bg-[#fbf8ff] px-4 py-3"
                             >
                                 <span className="flex-1">{memory.text}</span>
-                                <Badge variant="outline" className="ml-auto">{memory.initials}</Badge>
+
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Badge
+                                                variant="outline"
+                                                className="ml-auto cursor-pointer"
+                                                style={{
+                                                    backgroundColor: '#6f5a96',
+                                                    color: '#fff',
+                                                    borderColor: '#6f5a96'
+                                                }}
+                                            >
+                                                {memory.initials}
+                                            </Badge>
+                                        </TooltipTrigger>
+
+                                        <TooltipContent
+                                            side="top"
+                                            align="center"
+                                            className="rounded-lg border border-[#e6def5] bg-white/95 px-3 py-2 text-xs text-zinc-800 shadow-md backdrop-blur mb-1"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">{memory.fullName}</span>
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </li>
                         ))}
                     </ul>
