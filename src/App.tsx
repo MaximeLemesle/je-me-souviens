@@ -4,7 +4,6 @@ import type { Session } from '@supabase/supabase-js'
 import Home from './pages/Home'
 import supabase from './lib/supabase'
 import Auth from './pages/Auth'
-import { LogoutButtonContainer } from './components/auth/LogoutButtonContainer'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -23,9 +22,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-stone-100 text-zinc-900">
-      <div className="fixed right-6 top-6 z-50">
-        <LogoutButtonContainer />
-      </div>
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
