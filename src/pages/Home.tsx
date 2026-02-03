@@ -75,7 +75,7 @@ export default function Home() {
     }
 
     return (
-        <main className="w-full px-12 py-8">
+        <main className="w-full px-4 py-6 sm:px-12 sm:py-8">
             <HomeHeader
                 title="Un journal des souvenirs avec Mémère"
                 subtitle="Une page simple pour noter les moments et anecdotes que l'on a partagés avec Mémère🪻"

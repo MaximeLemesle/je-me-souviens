@@ -1,3 +1,4 @@
+import { LogOut, Loader2 } from 'lucide-react'
 import { Button } from '../ui/button'
 
 interface LogoutButtonProps {
@@ -14,8 +15,14 @@ export function LogoutButton({ isLoading, onLogout }: LogoutButtonProps) {
       onClick={onLogout}
       disabled={isLoading}
       className="rounded-full"
+      aria-label="Se déconnecter"
     >
-      {isLoading ? 'Déconnexion…' : 'Se déconnecter'}
+      <span className="sm:hidden">
+        {isLoading ? <Loader2 className="animate-spin" /> : <LogOut />}
+      </span>
+      <span className="hidden sm:inline">
+        {isLoading ? 'Déconnexion…' : 'Se déconnecter'}
+      </span>
     </Button>
   )
 }

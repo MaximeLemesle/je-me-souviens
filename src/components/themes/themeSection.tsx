@@ -32,6 +32,7 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
     const [isSaving, setIsSaving] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const formattedTitle = title ? title[0].toLowerCase() + title.slice(1) : title
 
     useEffect(() => {
         const fetchMemories = async () => {
@@ -95,8 +96,11 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
     return (
         <Card className="bg-white/90">
             <CardHeader>
-                <CardTitle className="font-['Dancing_Script',cursive] text-2xl pb-2">
-                    Je me souviens {title}
+                <CardTitle className="text-2xl pb-2">
+                    <span className="font-['Dancing_Script',cursive] text-[#6f5a96]">
+                        Je me souviens
+                    </span>
+                    <span className="text-zinc-900"> {formattedTitle}</span>
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">

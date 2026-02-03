@@ -40,7 +40,7 @@ export function AddThemeModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md p-4 sm:max-w-lg sm:p-6">
         <DialogHeader>
           <DialogTitle>Ajouter un thème</DialogTitle>
           <DialogDescription>
@@ -61,13 +61,18 @@ export function AddThemeModal({
           {errorMessage ? (
             <p className="text-sm text-red-600">{errorMessage}</p>
           ) : null}
-          <DialogFooter>
+          <DialogFooter className="pt-2">
             <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
                 Annuler
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? "Ajout…" : "Ajouter"}
             </Button>
           </DialogFooter>
