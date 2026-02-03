@@ -103,6 +103,7 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
                     <span className="text-zinc-900"> {formattedTitle}</span>
                 </CardTitle>
             </CardHeader>
+
             <CardContent className="flex flex-col gap-4">
                 {isLoading ? (
                     <p className="text-sm text-zinc-500">Chargement…</p>
