@@ -12,27 +12,40 @@ import { getCurrentUserId } from '../../services/userService'
 import { UserUtils } from '../../lib/user.utils'
 import { Badge } from '../ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
+import { Trash2 } from 'lucide-react'
 
 async function buildMemories(
     memories: MemoryEntity[],
-): Promise<{ text: string; initials: string; fullName: string }[]> {
+): Promise<{ id: string; text: string; initials: string; fullName: string; userId: string }[]> {
     const results = await Promise.all(
         memories.map(async (memory) => ({
+            id: memory.id,
             text: memory.text,
             initials: await UserUtils.getInitials(memory.user_id),
             fullName: await UserUtils.getFullName(memory.user_id),
+            userId: memory.user_id,
         })),
     )
     return results
 }
 
 export function ThemeSection({ title, themeId }: { title: string; themeId: string }) {
-    const [memories, setMemories] = useState<{ text: string; initials: string; fullName: string }[]>([])
+    const [memories, setMemories] = useState<{ id: string; text: string; initials: string; fullName: string; userId: string }[]>([])
     const [draft, setDraft] = useState('')
     const [isSaving, setIsSaving] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(null)
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null)
     const formattedTitle = title ? title[0].toLowerCase() + title.slice(1) : title
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { userId } = await getCurrentUserId()
+            setCurrentUserId(userId ?? null)
+        }
+        fetchUser()
+    }, [])
 
     useEffect(() => {
         const fetchMemories = async () => {
@@ -93,6 +106,26 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
         }
     }
 
+    const handleDelete = async (memoryId: string) => {
+        if (!currentUserId) {
+            setErrorMessage('Utilisateur non connecté.')
+            return
+        }
+        const confirmed = window.confirm('Supprimer ce souvenir ?')
+        if (!confirmed) return
+        setErrorMessage(null)
+        const { error } = await supabase
+            .from('memories')
+            .delete()
+            .eq('id', memoryId)
+            .eq('user_id', currentUserId)
+        if (error) {
+            setErrorMessage(error.message)
+            return
+        }
+        setMemories((prev) => prev.filter((memory) => memory.id !== memoryId))
+    }
+
     return (
         <Card className="bg-white/90">
             <CardHeader>
@@ -116,33 +149,58 @@ export function ThemeSection({ title, themeId }: { title: string; themeId: strin
                             >
                                 <span className="flex-1">{memory.text}</span>
 
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Badge
-                                                variant="outline"
-                                                className="ml-auto cursor-pointer"
-                                                style={{
-                                                    backgroundColor: '#6f5a96',
-                                                    color: '#fff',
-                                                    borderColor: '#6f5a96'
-                                                }}
-                                            >
-                                                {memory.initials}
-                                            </Badge>
-                                        </TooltipTrigger>
-
-                                        <TooltipContent
-                                            side="top"
-                                            align="center"
-                                            className="rounded-lg border border-[#e6def5] bg-white/95 px-3 py-2 text-xs text-zinc-800 shadow-md backdrop-blur mb-1"
+                                <div className="ml-auto flex items-center gap-2">
+                                    {currentUserId === memory.userId ? (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-zinc-500 hover:text-red-600"
+                                            onClick={() => handleDelete(memory.id)}
+                                            aria-label="Supprimer le souvenir"
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium">{memory.fullName}</span>
-                                            </div>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    ) : null}
+
+                                    <TooltipProvider>
+                                        <Tooltip
+                                            open={activeTooltipIndex === index}
+                                            onOpenChange={(open) => {
+                                                setActiveTooltipIndex(open ? index : null)
+                                            }}
+                                        >
+                                            <TooltipTrigger asChild>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="cursor-pointer"
+                                                    style={{
+                                                        backgroundColor: '#6f5a96',
+                                                        color: '#fff',
+                                                        borderColor: '#6f5a96'
+                                                    }}
+                                                    onClick={() => {
+                                                        setActiveTooltipIndex((current) =>
+                                                            current === index ? null : index
+                                                        )
+                                                    }}
+                                                >
+                                                    {memory.initials}
+                                                </Badge>
+                                            </TooltipTrigger>
+
+                                            <TooltipContent
+                                                side="top"
+                                                align="center"
+                                                className="rounded-lg border border-[#e6def5] bg-white/95 px-3 py-2 text-xs text-zinc-800 shadow-md backdrop-blur mb-1"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">{memory.fullName}</span>
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
                             </li>
                         ))}
                     </ul>

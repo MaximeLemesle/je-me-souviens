@@ -4,6 +4,10 @@
 @import "./theme.css";
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   body {
     font-family: "Ubuntu", ui-sans-serif, system-ui, sans-serif;
     background: #f7f3fb;
