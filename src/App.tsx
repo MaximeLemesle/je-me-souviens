@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import Home from './pages/Home'
 import supabase from './lib/supabase'
 import Auth from './pages/Auth'
@@ -17,7 +18,12 @@ function App() {
   }, [])
 
   if (!session) {
-    return <Auth />
+    return (
+      <>
+        <Auth />
+        <SpeedInsights />
+      </>
+    )
   }
 
   return (
@@ -25,6 +31,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
+      <SpeedInsights />
     </div>
   )
 }
